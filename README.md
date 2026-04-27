@@ -1,54 +1,39 @@
-const isNode = typeof window === 'undefined';
-const windowObj = isNode ? { localStorage: new Map() } : window;
-const storage = windowObj.localStorage;
+**Welcome to your Base44 project** 
 
-const toSnakeCase = (str) => {
-	return str.replace(/([A-Z])/g, '_$1').toLowerCase();
-}
+**About**
 
-const getAppParamValue = (paramName, { defaultValue = undefined, removeFromUrl = false } = {}) => {
-	if (isNode) {
-		return defaultValue;
-	}
-	const storageKey = `base44_${toSnakeCase(paramName)}`;
-	const urlParams = new URLSearchParams(window.location.search);
-	const searchParam = urlParams.get(paramName);
-	if (removeFromUrl) {
-		urlParams.delete(paramName);
-		const newUrl = `${window.location.pathname}${urlParams.toString() ? `?${urlParams.toString()}` : ""
-			}${window.location.hash}`;
-		window.history.replaceState({}, document.title, newUrl);
-	}
-	if (searchParam) {
-		storage.setItem(storageKey, searchParam);
-		return searchParam;
-	}
-	if (defaultValue) {
-		storage.setItem(storageKey, defaultValue);
-		return defaultValue;
-	}
-	const storedValue = storage.getItem(storageKey);
-	if (storedValue) {
-		return storedValue;
-	}
-	return null;
-}
+View and Edit  your app on [Base44.com](http://Base44.com) 
 
-const getAppParams = () => {
-	if (getAppParamValue("clear_access_token") === 'true') {
-		storage.removeItem('base44_access_token');
-		storage.removeItem('token');
-	}
-	return {
-		appId: getAppParamValue("app_id", { defaultValue: import.meta.env.VITE_BASE44_APP_ID }),
-		token: getAppParamValue("access_token", { removeFromUrl: true }),
-		fromUrl: getAppParamValue("from_url", { defaultValue: window.location.href }),
-		functionsVersion: getAppParamValue("functions_version", { defaultValue: import.meta.env.VITE_BASE44_FUNCTIONS_VERSION }),
-		appBaseUrl: getAppParamValue("app_base_url", { defaultValue: import.meta.env.VITE_BASE44_APP_BASE_URL }),
-	}
-}
+This project contains everything you need to run your app locally.
 
+**Edit the code in your local development environment**
 
-export const appParams = {
-	...getAppParams()
-}
+Any change pushed to the repo will also be reflected in the Base44 Builder.
+
+**Prerequisites:** 
+
+1. Clone the repository using the project's Git URL 
+2. Navigate to the project directory
+3. Install dependencies: `npm install`
+4. Create an `.env.local` file and set the right environment variables
+
+```
+VITE_BASE44_APP_ID=your_app_id
+VITE_BASE44_APP_BASE_URL=your_backend_url
+
+e.g.
+VITE_BASE44_APP_ID=cbef744a8545c389ef439ea6
+VITE_BASE44_APP_BASE_URL=https://my-to-do-list-81bfaad7.base44.app
+```
+
+Run the app: `npm run dev`
+
+**Publish your changes**
+
+Open [Base44.com](http://Base44.com) and click on Publish.
+
+**Docs & Support**
+
+Documentation: [https://docs.base44.com/Integrations/Using-GitHub](https://docs.base44.com/Integrations/Using-GitHub)
+
+Support: [https://app.base44.com/support](https://app.base44.com/support)

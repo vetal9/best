@@ -1,28 +1,41 @@
-"use client"
-
 import * as React from "react"
-import * as TooltipPrimitive from "@radix-ui/react-tooltip"
+import * as AccordionPrimitive from "@radix-ui/react-accordion"
+import { ChevronDown } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
-const TooltipProvider = TooltipPrimitive.Provider
+const Accordion = AccordionPrimitive.Root
 
-const Tooltip = TooltipPrimitive.Root
+const AccordionItem = React.forwardRef(({ className, ...props }, ref) => (
+  <AccordionPrimitive.Item ref={ref} className={cn("border-b", className)} {...props} />
+))
+AccordionItem.displayName = "AccordionItem"
 
-const TooltipTrigger = TooltipPrimitive.Trigger
-
-const TooltipContent = React.forwardRef(({ className, sideOffset = 4, ...props }, ref) => (
-  <TooltipPrimitive.Portal>
-    <TooltipPrimitive.Content
+const AccordionTrigger = React.forwardRef(({ className, children, ...props }, ref) => (
+  <AccordionPrimitive.Header className="flex">
+    <AccordionPrimitive.Trigger
       ref={ref}
-      sideOffset={sideOffset}
       className={cn(
-        "z-50 overflow-hidden rounded-md bg-primary px-3 py-1.5 text-xs text-primary-foreground animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+        "flex flex-1 items-center justify-between py-4 text-sm font-medium transition-all hover:underline text-left [&[data-state=open]>svg]:rotate-180",
         className
       )}
-      {...props} />
-  </TooltipPrimitive.Portal>
+      {...props}>
+      {children}
+      <ChevronDown
+        className="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200" />
+    </AccordionPrimitive.Trigger>
+  </AccordionPrimitive.Header>
 ))
-TooltipContent.displayName = TooltipPrimitive.Content.displayName
+AccordionTrigger.displayName = AccordionPrimitive.Trigger.displayName
 
-export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider }
+const AccordionContent = React.forwardRef(({ className, children, ...props }, ref) => (
+  <AccordionPrimitive.Content
+    ref={ref}
+    className="overflow-hidden text-sm data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down"
+    {...props}>
+    <div className={cn("pb-4 pt-0", className)}>{children}</div>
+  </AccordionPrimitive.Content>
+))
+AccordionContent.displayName = AccordionPrimitive.Content.displayName
+
+export { Accordion, AccordionItem, AccordionTrigger, AccordionContent }

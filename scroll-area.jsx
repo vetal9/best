@@ -1,25 +1,34 @@
-"use client"
-
 import * as React from "react"
-import * as HoverCardPrimitive from "@radix-ui/react-hover-card"
+import { cva } from "class-variance-authority";
 
 import { cn } from "@/lib/utils"
 
-const HoverCard = HoverCardPrimitive.Root
+const badgeVariants = cva(
+  "inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  {
+    variants: {
+      variant: {
+        default:
+          "border-transparent bg-primary text-primary-foreground shadow hover:bg-primary/80",
+        secondary:
+          "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        destructive:
+          "border-transparent bg-destructive text-destructive-foreground shadow hover:bg-destructive/80",
+        outline: "text-foreground",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  }
+)
 
-const HoverCardTrigger = HoverCardPrimitive.Trigger
+function Badge({
+  className,
+  variant,
+  ...props
+}) {
+  return (<div className={cn(badgeVariants({ variant }), className)} {...props} />);
+}
 
-const HoverCardContent = React.forwardRef(({ className, align = "center", sideOffset = 4, ...props }, ref) => (
-  <HoverCardPrimitive.Content
-    ref={ref}
-    align={align}
-    sideOffset={sideOffset}
-    className={cn(
-      "z-50 w-64 rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
-      className
-    )}
-    {...props} />
-))
-HoverCardContent.displayName = HoverCardPrimitive.Content.displayName
-
-export { HoverCard, HoverCardTrigger, HoverCardContent }
+export { Badge, badgeVariants }

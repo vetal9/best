@@ -1,177 +1,121 @@
-import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Phone } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import React from "react";
+import { motion } from "framer-motion";
+import { Home, Building2, Package, Truck, Shield, Clock } from "lucide-react";
 import { useLanguage } from "@/components/LanguageContext";
 
-const navHrefs = ["#services", "#process", "#about", "#testimonials", "#contact"];
+export default function ServicesSection({ images }) {
+  const { t, lang } = useLanguage();
 
-export default function Navbar() {
-  const { lang, setLang, t } = useLanguage();
-  const [scrolled, setScrolled] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const services = [
+    { icon: Home, phase: "01", title: t.services.s1title, desc: t.services.s1desc },
+    { icon: Building2, phase: "02", title: t.services.s2title, desc: t.services.s2desc },
+    { icon: Package, phase: "03", title: t.services.s3title, desc: t.services.s3desc },
+    { icon: Truck, phase: "04", title: t.services.s4title, desc: t.services.s4desc },
+    { icon: Shield, phase: "05", title: t.services.s5title, desc: t.services.s5desc },
+    { icon: Clock, phase: "06", title: t.services.s6title, desc: t.services.s6desc },
+  ];
 
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 50);
-    window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  const scrollTo = (href) => {
-    setMobileOpen(false);
-    const el = document.querySelector(href);
-    if (el) el.scrollIntoView({ behavior: "smooth" });
-  };
-
-  const navLabels = [
-    t.nav.services,
-    t.nav.process,
-    t.nav.about,
-    t.nav.testimonials,
-    t.nav.contact,
+  const moveItems = [
+    { src: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&q=80", label: lang === "fr" ? "Sofas & Canapés" : "Sofas & Couches" },
+    { src: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&q=80", label: lang === "fr" ? "Mobilier de Salon" : "Living Room Furniture" },
+    { src: "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=800&q=80", label: lang === "fr" ? "Cuisine & Électros" : "Kitchen & Appliances" },
+    { src: "https://images.unsplash.com/photo-1540518614846-7eded433c457?w=800&q=80", label: lang === "fr" ? "Chambres à Coucher" : "Bedrooms" },
+    { src: "https://images.unsplash.com/photo-1571624436279-b272aff752b5?w=800&q=80", label: lang === "fr" ? "Réfrigérateurs" : "Refrigerators" },
+    { src: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&q=80", label: lang === "fr" ? "Électroménagers" : "Appliances" },
   ];
 
   return (
-    <>
-      <motion.nav
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-          scrolled
-            ? "bg-ultramarine-dark/95 backdrop-blur-md border-b border-orange/10"
-            : "bg-transparent"
-        }`}
-      >
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20">
-            {/* Logo */}
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-orange rounded flex items-center justify-center">
-                <span className="text-white font-inter font-black text-xl">K</span>
-              </div>
-              <div className="hidden sm:block">
-                <p className="font-inter font-bold text-foreground text-sm tracking-wider uppercase">
-                  Kostas
-                </p>
-                <p className="font-mono text-[10px] text-orange tracking-widest uppercase">
-                  Déménagement
-                </p>
-              </div>
-            </div>
+    <section id="services" className="relative py-32 overflow-hidden">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="mb-20"
+        >
+          <span className="font-mono text-xs tracking-[0.3em] text-orange uppercase">
+            {t.services.phase}
+          </span>
+          <h2 className="font-inter font-black text-4xl sm:text-5xl md:text-6xl text-foreground uppercase mt-4 tracking-tight">
+            {t.services.heading1}<br />
+            <span className="text-orange">{t.services.heading2}</span>
+          </h2>
+          <div className="w-16 h-1 bg-orange mt-6" />
+        </motion.div>
 
-            {/* Desktop Links */}
-            <div className="hidden lg:flex items-center gap-8">
-              {navLabels.map((label, i) => (
-                <button
-                  key={label}
-                  onClick={() => scrollTo(navHrefs[i])}
-                  className="font-mono text-xs tracking-widest text-foreground/70 hover:text-orange transition-colors duration-300"
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-
-            {/* Right: Lang toggle + CTA + Mobile */}
-            <div className="flex items-center gap-3">
-              {/* Language Toggle */}
-              <div className="flex items-center border border-border rounded overflow-hidden">
-                <button
-                  onClick={() => setLang("fr")}
-                  className={`font-mono text-[10px] tracking-wider px-3 py-1.5 transition-colors ${
-                    lang === "fr"
-                      ? "bg-orange text-white"
-                      : "text-foreground/50 hover:text-foreground"
-                  }`}
-                >
-                  FR
-                </button>
-                <button
-                  onClick={() => setLang("en")}
-                  className={`font-mono text-[10px] tracking-wider px-3 py-1.5 transition-colors ${
-                    lang === "en"
-                      ? "bg-orange text-white"
-                      : "text-foreground/50 hover:text-foreground"
-                  }`}
-                >
-                  EN
-                </button>
+        {/* Image Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-20">
+          {moveItems.map((item, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: i * 0.1 }}
+              className="relative group overflow-hidden rounded aspect-[4/3]"
+            >
+              <img
+                src={item.src}
+                alt={item.label}
+                className="w-full h-full object-cover transition-all duration-700 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-ultramarine/60 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center justify-center">
+                <span className="font-mono text-xs tracking-widest text-orange uppercase text-center px-2">
+                  {item.label}
+                </span>
               </div>
-
-              <a href="tel:5148850785" className="hidden md:flex items-center gap-2 text-orange font-mono text-xs">
-                <Phone className="w-3.5 h-3.5" />
-                <span>514-885-0785</span>
-              </a>
-              <Button
-                onClick={() => scrollTo("#contact")}
-                className="hidden sm:flex bg-orange hover:bg-orange-dark text-white font-inter font-semibold text-xs tracking-wider uppercase h-11 px-5 rounded"
-              >
-                {t.nav.getQuote}
-              </Button>
-              <button
-                onClick={() => setMobileOpen(!mobileOpen)}
-                className="lg:hidden text-foreground"
-              >
-                {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-              </button>
-            </div>
-          </div>
+            </motion.div>
+          ))}
         </div>
-      </motion.nav>
 
-      {/* Mobile Menu */}
-      <AnimatePresence>
-        {mobileOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="fixed inset-0 z-40 bg-ultramarine-dark/98 backdrop-blur-xl pt-24"
+        {/* CTA Quote Button */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="flex justify-center mb-20"
+        >
+          <a
+            href="#contact"
+            className="inline-flex items-center gap-3 bg-orange hover:bg-orange/90 text-white font-inter font-bold text-sm tracking-widest uppercase px-10 py-5 rounded transition-all duration-300 hover:shadow-[0_0_30px_rgba(255,100,0,0.3)] group"
           >
-            <div className="flex flex-col items-center gap-8 p-8">
-              {/* Mobile Lang Toggle */}
-              <div className="flex items-center border border-border rounded overflow-hidden">
-                <button
-                  onClick={() => setLang("fr")}
-                  className={`font-mono text-sm tracking-wider px-6 py-2 transition-colors ${
-                    lang === "fr" ? "bg-orange text-white" : "text-foreground/50"
-                  }`}
-                >
-                  FR
-                </button>
-                <button
-                  onClick={() => setLang("en")}
-                  className={`font-mono text-sm tracking-wider px-6 py-2 transition-colors ${
-                    lang === "en" ? "bg-orange text-white" : "text-foreground/50"
-                  }`}
-                >
-                  EN
-                </button>
-              </div>
+            {lang === "fr" ? "Demander un devis gratuit" : "Получить бесплатную смету"}
+            <span className="group-hover:translate-x-1 transition-transform">→</span>
+          </a>
+        </motion.div>
 
-              {navLabels.map((label, i) => (
-                <motion.button
-                  key={label}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.1 }}
-                  onClick={() => scrollTo(navHrefs[i])}
-                  className="font-inter font-bold text-2xl text-foreground/90 hover:text-orange transition-colors"
-                >
-                  {label}
-                </motion.button>
-              ))}
-              <Button
-                onClick={() => scrollTo("#contact")}
-                className="bg-orange hover:bg-orange-dark text-white font-inter font-bold text-lg h-14 px-10 rounded mt-4"
-              >
-                {t.nav.getQuote}
-              </Button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </>
+        {/* Services Grid */}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {services.map((service, i) => (
+            <motion.div
+              key={service.phase}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: i * 0.1 }}
+              className="group relative bg-muted/50 border border-border hover:border-orange/30 rounded p-8 transition-all duration-500 hover:bg-muted"
+            >
+              <span className="font-mono text-[10px] tracking-[0.3em] text-muted-foreground">
+                SVC_{service.phase}
+              </span>
+              <div className="mt-4 mb-5">
+                <div className="w-12 h-12 rounded bg-orange/10 flex items-center justify-center group-hover:bg-orange/20 transition-colors">
+                  <service.icon className="w-5 h-5 text-orange" />
+                </div>
+              </div>
+              <h3 className="font-inter font-bold text-lg text-foreground uppercase tracking-wide">
+                {service.title}
+              </h3>
+              <p className="font-inter text-sm text-muted-foreground leading-relaxed mt-3">
+                {service.desc}
+              </p>
+              <div className="absolute bottom-0 left-0 w-0 group-hover:w-full h-px bg-orange transition-all duration-700" />
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }

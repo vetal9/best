@@ -1,14 +1,5 @@
-import { cn } from "@/lib/utils"
+import * as AspectRatioPrimitive from "@radix-ui/react-aspect-ratio"
 
-function Skeleton({
-  className,
-  ...props
-}) {
-  return (
-    (<div
-      className={cn("animate-pulse rounded-md bg-primary/10", className)}
-      {...props} />)
-  );
-}
+const AspectRatio = AspectRatioPrimitive.Root
 
-export { Skeleton }
+export { AspectRatio }

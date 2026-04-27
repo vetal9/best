@@ -1,121 +1,164 @@
-import React from "react";
-import { motion } from "framer-motion";
-import { Home, Building2, Package, Truck, Shield, Clock } from "lucide-react";
-import { useLanguage } from "@/components/LanguageContext";
+// Inspired by react-hot-toast library
+import { useState, useEffect } from "react";
 
-export default function ServicesSection({ images }) {
-  const { t, lang } = useLanguage();
+const TOAST_LIMIT = 20;
+const TOAST_REMOVE_DELAY = 1000000;
 
-  const services = [
-    { icon: Home, phase: "01", title: t.services.s1title, desc: t.services.s1desc },
-    { icon: Building2, phase: "02", title: t.services.s2title, desc: t.services.s2desc },
-    { icon: Package, phase: "03", title: t.services.s3title, desc: t.services.s3desc },
-    { icon: Truck, phase: "04", title: t.services.s4title, desc: t.services.s4desc },
-    { icon: Shield, phase: "05", title: t.services.s5title, desc: t.services.s5desc },
-    { icon: Clock, phase: "06", title: t.services.s6title, desc: t.services.s6desc },
-  ];
+const actionTypes = {
+  ADD_TOAST: "ADD_TOAST",
+  UPDATE_TOAST: "UPDATE_TOAST",
+  DISMISS_TOAST: "DISMISS_TOAST",
+  REMOVE_TOAST: "REMOVE_TOAST",
+};
 
-  const moveItems = [
-    { src: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&q=80", label: lang === "fr" ? "Sofas & Canapés" : "Sofas & Couches" },
-    { src: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&q=80", label: lang === "fr" ? "Mobilier de Salon" : "Living Room Furniture" },
-    { src: "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=800&q=80", label: lang === "fr" ? "Cuisine & Électros" : "Kitchen & Appliances" },
-    { src: "https://images.unsplash.com/photo-1540518614846-7eded433c457?w=800&q=80", label: lang === "fr" ? "Chambres à Coucher" : "Bedrooms" },
-    { src: "https://images.unsplash.com/photo-1571624436279-b272aff752b5?w=800&q=80", label: lang === "fr" ? "Réfrigérateurs" : "Refrigerators" },
-    { src: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&q=80", label: lang === "fr" ? "Électroménagers" : "Appliances" },
-  ];
+let count = 0;
 
-  return (
-    <section id="services" className="relative py-32 overflow-hidden">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="mb-20"
-        >
-          <span className="font-mono text-xs tracking-[0.3em] text-orange uppercase">
-            {t.services.phase}
-          </span>
-          <h2 className="font-inter font-black text-4xl sm:text-5xl md:text-6xl text-foreground uppercase mt-4 tracking-tight">
-            {t.services.heading1}<br />
-            <span className="text-orange">{t.services.heading2}</span>
-          </h2>
-          <div className="w-16 h-1 bg-orange mt-6" />
-        </motion.div>
-
-        {/* Image Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-20">
-          {moveItems.map((item, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: i * 0.1 }}
-              className="relative group overflow-hidden rounded aspect-[4/3]"
-            >
-              <img
-                src={item.src}
-                alt={item.label}
-                className="w-full h-full object-cover transition-all duration-700 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-ultramarine/60 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center justify-center">
-                <span className="font-mono text-xs tracking-widest text-orange uppercase text-center px-2">
-                  {item.label}
-                </span>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* CTA Quote Button */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="flex justify-center mb-20"
-        >
-          <a
-            href="#contact"
-            className="inline-flex items-center gap-3 bg-orange hover:bg-orange/90 text-white font-inter font-bold text-sm tracking-widest uppercase px-10 py-5 rounded transition-all duration-300 hover:shadow-[0_0_30px_rgba(255,100,0,0.3)] group"
-          >
-            {lang === "fr" ? "Demander un devis gratuit" : "Получить бесплатную смету"}
-            <span className="group-hover:translate-x-1 transition-transform">→</span>
-          </a>
-        </motion.div>
-
-        {/* Services Grid */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {services.map((service, i) => (
-            <motion.div
-              key={service.phase}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: i * 0.1 }}
-              className="group relative bg-muted/50 border border-border hover:border-orange/30 rounded p-8 transition-all duration-500 hover:bg-muted"
-            >
-              <span className="font-mono text-[10px] tracking-[0.3em] text-muted-foreground">
-                SVC_{service.phase}
-              </span>
-              <div className="mt-4 mb-5">
-                <div className="w-12 h-12 rounded bg-orange/10 flex items-center justify-center group-hover:bg-orange/20 transition-colors">
-                  <service.icon className="w-5 h-5 text-orange" />
-                </div>
-              </div>
-              <h3 className="font-inter font-bold text-lg text-foreground uppercase tracking-wide">
-                {service.title}
-              </h3>
-              <p className="font-inter text-sm text-muted-foreground leading-relaxed mt-3">
-                {service.desc}
-              </p>
-              <div className="absolute bottom-0 left-0 w-0 group-hover:w-full h-px bg-orange transition-all duration-700" />
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
+function genId() {
+  count = (count + 1) % Number.MAX_VALUE;
+  return count.toString();
 }
+
+const toastTimeouts = new Map();
+
+const addToRemoveQueue = (toastId) => {
+  if (toastTimeouts.has(toastId)) {
+    return;
+  }
+
+  const timeout = setTimeout(() => {
+    toastTimeouts.delete(toastId);
+    dispatch({
+      type: actionTypes.REMOVE_TOAST,
+      toastId,
+    });
+  }, TOAST_REMOVE_DELAY);
+
+  toastTimeouts.set(toastId, timeout);
+};
+
+const _clearFromRemoveQueue = (toastId) => {
+  const timeout = toastTimeouts.get(toastId);
+  if (timeout) {
+    clearTimeout(timeout);
+    toastTimeouts.delete(toastId);
+  }
+};
+
+export const reducer = (state, action) => {
+  switch (action.type) {
+    case actionTypes.ADD_TOAST:
+      return {
+        ...state,
+        toasts: [action.toast, ...state.toasts].slice(0, TOAST_LIMIT),
+      };
+
+    case actionTypes.UPDATE_TOAST:
+      return {
+        ...state,
+        toasts: state.toasts.map((t) =>
+          t.id === action.toast.id ? { ...t, ...action.toast } : t
+        ),
+      };
+
+    case actionTypes.DISMISS_TOAST: {
+      const { toastId } = action;
+
+      // ! Side effects ! - This could be extracted into a dismissToast() action,
+      // but I'll keep it here for simplicity
+      if (toastId) {
+        addToRemoveQueue(toastId);
+      } else {
+        state.toasts.forEach((toast) => {
+          addToRemoveQueue(toast.id);
+        });
+      }
+
+      return {
+        ...state,
+        toasts: state.toasts.map((t) =>
+          t.id === toastId || toastId === undefined
+            ? {
+                ...t,
+                open: false,
+              }
+            : t
+        ),
+      };
+    }
+    case actionTypes.REMOVE_TOAST:
+      if (action.toastId === undefined) {
+        return {
+          ...state,
+          toasts: [],
+        };
+      }
+      return {
+        ...state,
+        toasts: state.toasts.filter((t) => t.id !== action.toastId),
+      };
+  }
+};
+
+const listeners = [];
+
+let memoryState = { toasts: [] };
+
+function dispatch(action) {
+  memoryState = reducer(memoryState, action);
+  listeners.forEach((listener) => {
+    listener(memoryState);
+  });
+}
+
+function toast({ ...props }) {
+  const id = genId();
+
+  const update = (props) =>
+    dispatch({
+      type: actionTypes.UPDATE_TOAST,
+      toast: { ...props, id },
+    });
+
+  const dismiss = () =>
+    dispatch({ type: actionTypes.DISMISS_TOAST, toastId: id });
+
+  dispatch({
+    type: actionTypes.ADD_TOAST,
+    toast: {
+      ...props,
+      id,
+      open: true,
+      onOpenChange: (open) => {
+        if (!open) dismiss();
+      },
+    },
+  });
+
+  return {
+    id,
+    dismiss,
+    update,
+  };
+}
+
+function useToast() {
+  const [state, setState] = useState(memoryState);
+
+  useEffect(() => {
+    listeners.push(setState);
+    return () => {
+      const index = listeners.indexOf(setState);
+      if (index > -1) {
+        listeners.splice(index, 1);
+      }
+    };
+  }, [state]);
+
+  return {
+    ...state,
+    toast,
+    dismiss: (toastId) => dispatch({ type: actionTypes.DISMISS_TOAST, toastId }),
+  };
+}
+
+export { useToast, toast }; 

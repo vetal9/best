@@ -1,100 +1,82 @@
-/**
- * Generates a beautiful HTML email for move requests.
- */
-export function buildMoveRequestEmail({ name, email, phone, move_type, move_date, details, source = "Website" }) {
-  const typeLabels = {
-    residential: "Residential",
-    commercial: "Commercial",
-    long_distance: "Long Distance",
-    storage: "Storage",
-  };
+import { Toaster } from "@/components/ui/toaster"
+import { QueryClientProvider } from '@tanstack/react-query'
+import { queryClientInstance } from '@/lib/query-client'
+import { pagesConfig } from './pages.config'
+import { HashRouter as Router, Route, Routes } from 'react-router-dom';
+import PageNotFound from './lib/PageNotFound';
+import { AuthProvider, useAuth } from '@/lib/AuthContext';
+import UserNotRegisteredError from '@/components/UserNotRegisteredError';
+import AdminPanel from '@/pages/AdminPanel';
 
-  const rows = [
-    email    && { icon: "📧", label: "Email",     value: email },
-    phone    && { icon: "📞", label: "Phone",     value: phone },
-    move_type && { icon: "📦", label: "Move Type", value: typeLabels[move_type] || move_type },
-    move_date && { icon: "📅", label: "Move Date", value: move_date },
-    details   && { icon: "📝", label: "Details",   value: details },
-  ].filter(Boolean);
+const { Pages, Layout, mainPage } = pagesConfig;
+const mainPageKey = mainPage ?? Object.keys(Pages)[0];
+const MainPage = mainPageKey ? Pages[mainPageKey] : <></>;
 
-  const rowsHtml = rows.map(r => `
-    <tr>
-      <td style="padding:10px 16px;border-bottom:1px solid #f0f0f0;width:130px;vertical-align:top;">
-        <span style="font-size:15px;">${r.icon}</span>
-        <span style="font-family:monospace;font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-left:6px;">${r.label}</span>
-      </td>
-      <td style="padding:10px 16px;border-bottom:1px solid #f0f0f0;font-family:Arial,sans-serif;font-size:14px;color:#222;">
-        ${r.value}
-      </td>
-    </tr>
-  `).join("");
+const LayoutWrapper = ({ children, currentPageName }) => Layout ?
+  <Layout currentPageName={currentPageName}>{children}</Layout>
+  : <>{children}</>;
 
-  return `<!DOCTYPE html>
-<html lang="en">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#f4f6f9;font-family:Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f9;padding:40px 0;">
-    <tr><td align="center">
-      <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+const AuthenticatedApp = () => {
+  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
 
-        <!-- Header -->
-        <tr>
-          <td style="background:linear-gradient(135deg,#002395 0%,#001560 100%);padding:32px 40px;text-align:center;">
-            <div style="font-size:36px;margin-bottom:10px;">🚚</div>
-            <h1 style="margin:0;font-size:22px;color:#ffffff;font-weight:800;letter-spacing:1px;text-transform:uppercase;">
-              New Move Request
-            </h1>
-            <p style="margin:6px 0 0;font-size:12px;color:rgba(255,255,255,0.6);font-family:monospace;letter-spacing:2px;text-transform:uppercase;">
-              Kostas MovePlanner • ${source}
-            </p>
-          </td>
-        </tr>
+  // Show loading spinner while checking app public settings or auth
+  if (isLoadingPublicSettings || isLoadingAuth) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
-        <!-- Orange accent bar -->
-        <tr>
-          <td style="background:#FF4F00;height:4px;"></td>
-        </tr>
+  // Handle authentication errors
+  if (authError) {
+    if (authError.type === 'user_not_registered') {
+      return <UserNotRegisteredError />;
+    } else if (authError.type === 'auth_required') {
+      // Redirect to login automatically
+      navigateToLogin();
+      return null;
+    }
+  }
 
-        <!-- Client name banner -->
-        <tr>
-          <td style="background:#fff8f5;padding:20px 40px;border-bottom:1px solid #ffe4d6;">
-            <p style="margin:0;font-size:12px;color:#FF4F00;font-family:monospace;text-transform:uppercase;letter-spacing:2px;">Client</p>
-            <h2 style="margin:4px 0 0;font-size:24px;color:#1a1a2e;font-weight:800;">${name}</h2>
-          </td>
-        </tr>
+  // Render the main app
+  return (
+    <Routes>
+      <Route path="/" element={
+        <LayoutWrapper currentPageName={mainPageKey}>
+          <MainPage />
+        </LayoutWrapper>
+      } />
+      {Object.entries(Pages).map(([path, Page]) => (
+        <Route
+          key={path}
+          path={`/${path}`}
+          element={
+            <LayoutWrapper currentPageName={path}>
+              <Page />
+            </LayoutWrapper>
+          }
+        />
+      ))}
+      <Route path="/admin" element={<AdminPanel />} />
+      <Route path="*" element={<PageNotFound />} />
+    </Routes>
+  );
+};
 
-        <!-- Details table -->
-        <tr>
-          <td style="padding:8px 24px 24px;">
-            <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #f0f0f0;border-radius:8px;overflow:hidden;margin-top:16px;">
-              ${rowsHtml}
-            </table>
-          </td>
-        </tr>
 
-        <!-- CTA -->
-        <tr>
-          <td style="padding:0 40px 32px;text-align:center;">
-            <a href="https://kostasmoving.ca/admin"
-              style="display:inline-block;background:#FF4F00;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:8px;font-weight:700;font-size:13px;letter-spacing:1px;text-transform:uppercase;">
-              Open Admin Panel →
-            </a>
-          </td>
-        </tr>
+function App() {
 
-        <!-- Footer -->
-        <tr>
-          <td style="background:#f9f9f9;border-top:1px solid #eeeeee;padding:20px 40px;text-align:center;">
-            <p style="margin:0;font-size:11px;color:#aaaaaa;font-family:monospace;letter-spacing:1px;">
-              KOSTAS DÉMÉNAGEMENT • MONTRÉAL<br>
-              514-885-0785 • kostasdemenagement@gmail.com
-            </p>
-          </td>
-        </tr>
-
-      </table>
-    </td></tr>
-  </table>
-</body>
-</html>`;
+  return (
+    <AuthProvider>
+      <QueryClientProvider client={queryClientInstance}>
+        <Router>
+          <AuthenticatedApp />
+        </Router>
+        <Toaster />
+      </QueryClientProvider>
+    </AuthProvider>
+  )
 }
+
+export default App

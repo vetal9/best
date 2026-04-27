@@ -1,164 +1,69 @@
-// Inspired by react-hot-toast library
-import { useState, useEffect } from "react";
+Deno.serve(async (req) => {
+  try {
+    const body = await req.json();
+    const { name, email, phone, move_type, move_date, details, origin, destination } = body;
 
-const TOAST_LIMIT = 20;
-const TOAST_REMOVE_DELAY = 1000000;
-
-const actionTypes = {
-  ADD_TOAST: "ADD_TOAST",
-  UPDATE_TOAST: "UPDATE_TOAST",
-  DISMISS_TOAST: "DISMISS_TOAST",
-  REMOVE_TOAST: "REMOVE_TOAST",
-};
-
-let count = 0;
-
-function genId() {
-  count = (count + 1) % Number.MAX_VALUE;
-  return count.toString();
-}
-
-const toastTimeouts = new Map();
-
-const addToRemoveQueue = (toastId) => {
-  if (toastTimeouts.has(toastId)) {
-    return;
-  }
-
-  const timeout = setTimeout(() => {
-    toastTimeouts.delete(toastId);
-    dispatch({
-      type: actionTypes.REMOVE_TOAST,
-      toastId,
-    });
-  }, TOAST_REMOVE_DELAY);
-
-  toastTimeouts.set(toastId, timeout);
-};
-
-const _clearFromRemoveQueue = (toastId) => {
-  const timeout = toastTimeouts.get(toastId);
-  if (timeout) {
-    clearTimeout(timeout);
-    toastTimeouts.delete(toastId);
-  }
-};
-
-export const reducer = (state, action) => {
-  switch (action.type) {
-    case actionTypes.ADD_TOAST:
-      return {
-        ...state,
-        toasts: [action.toast, ...state.toasts].slice(0, TOAST_LIMIT),
-      };
-
-    case actionTypes.UPDATE_TOAST:
-      return {
-        ...state,
-        toasts: state.toasts.map((t) =>
-          t.id === action.toast.id ? { ...t, ...action.toast } : t
-        ),
-      };
-
-    case actionTypes.DISMISS_TOAST: {
-      const { toastId } = action;
-
-      // ! Side effects ! - This could be extracted into a dismissToast() action,
-      // but I'll keep it here for simplicity
-      if (toastId) {
-        addToRemoveQueue(toastId);
-      } else {
-        state.toasts.forEach((toast) => {
-          addToRemoveQueue(toast.id);
-        });
-      }
-
-      return {
-        ...state,
-        toasts: state.toasts.map((t) =>
-          t.id === toastId || toastId === undefined
-            ? {
-                ...t,
-                open: false,
-              }
-            : t
-        ),
-      };
-    }
-    case actionTypes.REMOVE_TOAST:
-      if (action.toastId === undefined) {
-        return {
-          ...state,
-          toasts: [],
-        };
-      }
-      return {
-        ...state,
-        toasts: state.toasts.filter((t) => t.id !== action.toastId),
-      };
-  }
-};
-
-const listeners = [];
-
-let memoryState = { toasts: [] };
-
-function dispatch(action) {
-  memoryState = reducer(memoryState, action);
-  listeners.forEach((listener) => {
-    listener(memoryState);
-  });
-}
-
-function toast({ ...props }) {
-  const id = genId();
-
-  const update = (props) =>
-    dispatch({
-      type: actionTypes.UPDATE_TOAST,
-      toast: { ...props, id },
-    });
-
-  const dismiss = () =>
-    dispatch({ type: actionTypes.DISMISS_TOAST, toastId: id });
-
-  dispatch({
-    type: actionTypes.ADD_TOAST,
-    toast: {
-      ...props,
-      id,
-      open: true,
-      onOpenChange: (open) => {
-        if (!open) dismiss();
-      },
-    },
-  });
-
-  return {
-    id,
-    dismiss,
-    update,
-  };
-}
-
-function useToast() {
-  const [state, setState] = useState(memoryState);
-
-  useEffect(() => {
-    listeners.push(setState);
-    return () => {
-      const index = listeners.indexOf(setState);
-      if (index > -1) {
-        listeners.splice(index, 1);
-      }
+    const typeLabels = {
+      residential: "Residential / Résidentiel",
+      commercial: "Commercial",
+      long_distance: "Long Distance / Longue distance",
+      storage: "Storage / Entreposage",
     };
-  }, [state]);
 
-  return {
-    ...state,
-    toast,
-    dismiss: (toastId) => dispatch({ type: actionTypes.DISMISS_TOAST, toastId }),
-  };
-}
+    const rows = [
+      phone ? `📞 Phone: ${phone}` : null,
+      email ? `📧 Email: ${email}` : null,
+      move_type ? `📦 Type: ${typeLabels[move_type] || move_type}` : null,
+      move_date ? `📅 Date: ${move_date}` : null,
+      origin ? `📍 From: ${origin}` : null,
+      destination ? `📍 To: ${destination}` : null,
+      details ? `📝 Details: ${details}` : null,
+    ].filter(Boolean);
 
-export { useToast, toast }; 
+    const htmlRows = rows.map(r => `<li style="margin:6px 0;">${r}</li>`).join("");
+
+    const htmlBody = `
+      <div style="font-family:sans-serif;max-width:600px;margin:0 auto;background:#0a0f1e;color:#f0f0f0;padding:32px;border-radius:12px;">
+        <div style="text-align:center;margin-bottom:24px;">
+          <span style="font-size:28px;">🚚</span>
+          <h2 style="color:#FF4F00;margin:8px 0;font-size:22px;text-transform:uppercase;letter-spacing:2px;">New Move Request</h2>
+          <p style="color:#888;font-size:12px;margin:0;">Kostas Déménagement — MovePlanner</p>
+        </div>
+        <div style="background:#111827;border-radius:8px;padding:20px;margin-bottom:16px;">
+          <p style="color:#FF4F00;font-size:11px;text-transform:uppercase;letter-spacing:2px;margin:0 0 12px;">Client: <span style="color:#fff;font-size:16px;">${name}</span></p>
+          <ul style="list-style:none;padding:0;margin:0;color:#ccc;font-size:14px;">
+            ${htmlRows}
+          </ul>
+        </div>
+        <div style="text-align:center;margin-top:20px;">
+          <a href="https://kostasmoving.ca/admin" style="background:#FF4F00;color:#fff;padding:12px 28px;border-radius:6px;text-decoration:none;font-size:13px;font-weight:bold;letter-spacing:1px;">View in Admin Panel →</a>
+        </div>
+        <p style="text-align:center;color:#444;font-size:11px;margin-top:24px;">Kostas Déménagement • Montréal, QC</p>
+      </div>
+    `;
+
+    const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
+      headers: {
+        "api-key": Deno.env.get("BREVO_API_KEY"),
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        sender: { name: "Kostas MovePlanner", email: "beugyl@gmail.com" },
+        to: [{ email: "beugyl@gmail.com" }],
+        subject: `🚚 New Move Request — ${name}`,
+        htmlContent: htmlBody,
+      }),
+    });
+
+    if (!res.ok) {
+      const errorBody = await res.text();
+      throw new Error(`Brevo error: ${res.status} - ${errorBody}`);
+    }
+
+    return Response.json({ ok: true });
+  } catch (error) {
+    console.error(error);
+    return Response.json({ error: error.message }, { status: 500 });
+  }
+});

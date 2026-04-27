@@ -1,22 +1,37 @@
-import * as React from "react"
-import * as CheckboxPrimitive from "@radix-ui/react-checkbox"
-import { Check } from "lucide-react"
+import { useEffect } from 'react';
+import { Outlet } from 'react-router-dom';
+import { useAuth } from '@/lib/AuthContext';
+import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 
-import { cn } from "@/lib/utils"
+const DefaultFallback = () => (
+  <div className="fixed inset-0 flex items-center justify-center">
+    <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
+  </div>
+);
 
-const Checkbox = React.forwardRef(({ className, ...props }, ref) => (
-  <CheckboxPrimitive.Root
-    ref={ref}
-    className={cn(
-      "peer h-4 w-4 shrink-0 rounded-sm border border-primary shadow focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground",
-      className
-    )}
-    {...props}>
-    <CheckboxPrimitive.Indicator className={cn("flex items-center justify-center text-current")}>
-      <Check className="h-4 w-4" />
-    </CheckboxPrimitive.Indicator>
-  </CheckboxPrimitive.Root>
-))
-Checkbox.displayName = CheckboxPrimitive.Root.displayName
+export default function ProtectedRoute({ fallback = <DefaultFallback />, unauthenticatedElement }) {
+  const { isAuthenticated, isLoadingAuth, authChecked, authError, checkUserAuth } = useAuth();
 
-export { Checkbox }
+  useEffect(() => {
+    if (!authChecked && !isLoadingAuth) {
+      checkUserAuth();
+    }
+  }, [authChecked, isLoadingAuth, checkUserAuth]);
+
+  if (isLoadingAuth || !authChecked) {
+    return fallback;
+  }
+
+  if (authError) {
+    if (authError.type === 'user_not_registered') {
+      return <UserNotRegisteredError />;
+    }
+    return unauthenticatedElement;
+  }
+
+  if (!isAuthenticated) {
+    return unauthenticatedElement;
+  }
+
+  return <Outlet />;
+}
